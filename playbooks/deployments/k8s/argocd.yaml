@@ -1,0 +1,32 @@
+---
+- name: Install ArgoCD
+  hosts: servers
+  remote_user: root
+  pre_tasks:
+    - name: Ensure that cluster is running
+      command: "kubectl cluster-info"
+      ignore_errors: yes
+      register: cluster_info
+      changed_when: false
+    - name: Ensure that helm is installed
+      command: "helm version"
+      ignore_errors: yes
+      register: helm_version
+      changed_when: false
+  tasks:
+    - name: Add ArgoCD repository
+      command: "helm repo add argo-cd https://argoproj.github.io/argo-helm"
+      when: helm_version.rc == 0
+      changed_when: false
+    - name: Update helm repositories
+      command: "helm repo update"
+      when: helm_version.rc == 0
+      changed_when: false
+    - name: Install ArgoCD
+      command: "helm install argo-cd argo-cd/argo-cd"
+      when: helm_version.rc == 0
+      changed_when: false
+    - name: Ensure ArgoCD is installed
+      command: "kubectl get pods -n argo-cd"
+      when: helm_version.rc == 0
+      changed_when: false

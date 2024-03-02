@@ -1,0 +1,27 @@
+---
+- name: Install and run RabbitMQ using Docker
+  hosts: servers
+  remote_user: root
+  vars:
+    rabbitmq_user: "user"
+    rabbitmq_password: "pass"
+  pre_tasks:
+    - name: Check if Docker service is enabled
+      service:
+        name: docker
+        state: started
+        enabled: yes
+      become: yes
+  tasks:
+    - name: Install RabbitMQ
+      docker_container:
+        name: rabbitmq
+        image: rabbitmq:latest
+        env:
+          - RABBITMQ_DEFAULT_USER: "{{ rabbitmq_user }}"
+          - RABBITMQ_DEFAULT_PASS: "{{ rabbitmq_password }}"
+        ports:
+          - "5672:5672"
+          - "15672:15672"
+        state: started
+      become: yes

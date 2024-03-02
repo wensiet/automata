@@ -1,0 +1,47 @@
+---
+- name: Install Docker
+  hosts: servers
+  remote_user: root
+  tasks:
+    - name: Update apt packages
+      apt:
+        update_cache: yes
+      become: yes
+
+    - name: Install prequisites
+      apt:
+        name:
+          - ca-certificates
+          - curl
+      become: yes
+
+    - name: Make keyrings
+      command: sudo install -m 0755 -d /etc/apt/keyrings
+      become: yes
+
+    - name: Add GPG
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+      become: yes
+
+    - name: Add repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+      become: yes
+
+    - name: Install Docker packages
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+      become: yes
+
+    - name: Check if Docker service is enabled
+      service:
+        name: docker
+        state: started
+        enabled: yes
+      become: yes

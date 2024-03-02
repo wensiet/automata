@@ -1,0 +1,26 @@
+---
+- name: Deploy single-node kind cluster
+  hosts: servers
+  remote_user: root
+  tasks:
+    - name: Create config.yaml file
+      ansible.builtin.copy:
+        content: |
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          networking:
+            apiServerAddress: "{{ ansible_host }}"
+            apiServerPort: 6443
+        dest: config.yaml
+    - name: Create kind cluster
+      ansible.builtin.command: kind create cluster --image=kindest/node:v1.23.0 --name remote --config=config.yaml
+      become: yes
+    - name: Get kubeconfig
+      command: >
+        kind get kubeconfig --name=remote
+      register: kubeconfig_output
+      become: yes
+    - name: Save kubeconfig to local file
+      ansible.builtin.fetch:
+        src: "{{ kubeconfig_output.stdout }}"
+        dest: "conf_{{ ansible_host }}.yaml"

@@ -1,0 +1,28 @@
+---
+- name: Install and run PostgreSQL using Docker
+  hosts: servers
+  remote_user: root
+  vars:
+    postgres_user: "user"
+    postgres_password: "pass"
+    postgres_db: "db"
+  pre_tasks:
+    - name: Check if Docker service is enabled
+      service:
+        name: docker
+        state: started
+        enabled: yes
+      become: yes
+  tasks:
+    - name: Install PostgreSQL
+      docker_container:
+        name: postgres
+        image: postgres:latest
+        env:
+          - POSTGRES_PASSWORD: "{{ postgres_password }}"
+          - POSTGRES_USER: "{{ postgres_user }}"
+          - POSTGRES_DB: "{{ postgres_db }}"
+        ports:
+          - "5432:5432"
+        state: started
+      become: yes

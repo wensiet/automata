@@ -1,0 +1,17 @@
+---
+- name: Install kubectl
+  hosts: servers
+  remote_user: root
+  tasks:
+    - name: Get Kubernetes stable version
+      command: 'curl -L -s https://dl.k8s.io/release/stable.txt'
+      register: kubernetes_stable_version
+    - name: Curl release
+      command: 'curl -LO "https://dl.k8s.io/release/{{ kubernetes_stable_version.stdout }}/bin/linux/amd64/kubectl"'
+      become: yes
+    - name: Install kubectl
+      command: "sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl"
+      become: yes
+    - name: Ensure kubectl is installed
+      command: "kubectl version --client"
+      become: yes

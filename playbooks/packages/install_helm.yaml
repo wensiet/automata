@@ -1,0 +1,17 @@
+---
+- name: Install Helm
+  hosts: servers
+  remote_user: root
+  tasks:
+    - name: Curl release
+      command: "curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3"
+      become: yes
+    - name: Grant permissions
+      command: "chmod 700 get_helm.sh"
+      become: yes
+    - name: Install Helm
+      command: "bash get_helm.sh"
+      become: yes
+    - name: Ensure Helm is installed
+      command: "helm version"
+      become: yes

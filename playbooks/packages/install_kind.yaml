@@ -1,0 +1,17 @@
+---
+- name: Install Kind
+  hosts: servers
+  remote_user: root
+  tasks:
+    - name: Curl release
+      command: "curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.22.0/kind-linux-amd64"
+      become: yes
+    - name: Grant permissions
+      command: "chmod +x ./kind"
+      become: yes
+    - name: Move Kind to bin
+      command: "mv ./kind /usr/local/bin/kind"
+      become: yes
+    - name: Ensure Kind is installed
+      command: "kind version"
+      become: yes

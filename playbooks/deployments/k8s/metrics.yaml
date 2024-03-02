@@ -1,0 +1,19 @@
+---
+- name: Install metrics service
+  hosts: servers
+  remote_user: root
+  pre_tasks:
+    - name: Ensure that cluster is running
+      command: "kubectl cluster-info"
+      ignore_errors: yes
+      register: cluster_info
+      changed_when: false
+    - name: Ensure that metrics service is not installed
+      command: "kubectl get pods -n kube-system | grep metrics-server"
+      ignore_errors: yes
+      register: metrics_server
+      changed_when: false
+  tasks:
+    - name: Apply k8s metrics configuration
+      command: "kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml"
+      become: yes

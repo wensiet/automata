@@ -1,0 +1,27 @@
+---
+- name: Install and run MinIO using Docker
+  hosts: servers
+  remote_user: root
+  vars:
+    minio_access_key: "user"
+    minio_secret: "pass"
+  pre_tasks:
+    - name: Check if Docker service is enabled
+      service:
+        name: docker
+        state: started
+        enabled: yes
+      become: yes
+  tasks:
+    - name: Install MinIO
+      docker_container:
+        name: minio
+        image: minio/minio:latest
+        env:
+          - MINIO_ACCESS_KEY: "{{ minio_access_key }}"
+          - MINIO_SECRET_KEY: "{{ minio_secret }}"
+        ports:
+          - "9000:9000"
+          - "9001:9001"
+        state: started
+      become: yes

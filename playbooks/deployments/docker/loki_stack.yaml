@@ -1,0 +1,20 @@
+---
+- name: Install and run Loki stack using Docker (This includes Loki, Promtail and Grafana)
+  hosts: servers
+  remote_user: root
+  pre_tasks:
+    - name: Check if Docker service is enabled
+      service:
+        name: docker
+        state: started
+        enabled: yes
+      become: yes
+  tasks:
+    - name: Download docker-compose yaml
+      get_url:
+          url: https://raw.githubusercontent.com/grafana/loki/v2.9.4/production/docker-compose.yaml
+          dest: /loki/docker-compose.yaml
+      become: yes
+    - name: Apply downloaded configuration
+      command: docker-compose -f /loki/docker-compose.yaml up -d
+      become: yes

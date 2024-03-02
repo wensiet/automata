@@ -1,0 +1,13 @@
+---
+- name: Update and Upgrade Apt Packages
+  hosts: servers
+  become: yes
+  tasks:
+    - name: Update apt package cache
+      apt:
+        update_cache: yes
+    - name: Upgrade all packages
+      apt:
+        upgrade: dist
+        autoremove: yes
+        autoclean: yes

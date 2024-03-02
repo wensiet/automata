@@ -1,0 +1,32 @@
+---
+- name: Install nginx-ingress
+  hosts: servers
+  remote_user: root
+  pre_tasks:
+    - name: Ensure that cluster is running
+      command: "kubectl cluster-info"
+      ignore_errors: yes
+      register: cluster_info
+      changed_when: false
+    - name: Ensure that helm is installed
+      command: "helm version"
+      ignore_errors: yes
+      register: helm_version
+      changed_when: false
+  tasks:
+    - name: Add ingress-nginx repository
+      command: "helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx"
+      when: helm_version.rc == 0
+      changed_when: false
+    - name: Update helm repositories
+      command: "helm repo update"
+      when: helm_version.rc == 0
+      changed_when: false
+    - name: Install nginx-ingress
+      command: "helm install nginx-ingress ingress-nginx/ingress-nginx"
+      when: helm_version.rc == 0
+      changed_when: false
+    - name: Ensure nginx-ingress is installed
+      command: "kubectl get pods -n ingress-nginx"
+      when: helm_version.rc == 0
+      changed_when: false

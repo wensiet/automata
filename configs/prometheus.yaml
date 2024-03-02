@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+scrape_configs:
+  # Monitoring API
+  - job_name: docker-job-name
+    static_configs:
+      - targets:
+          - docker-job-name:docker-port
+  # Self-care
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - localhost:9090

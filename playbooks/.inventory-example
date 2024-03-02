@@ -1,0 +1,2 @@
+[servers]
+<remote host alias> ansible_host=<remote host ipv4>

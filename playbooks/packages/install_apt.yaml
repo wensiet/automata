@@ -1,0 +1,15 @@
+---
+- name: Install Apt Packages
+  hosts: servers
+  become: yes
+  vars:
+    packages_to_install: "{{ packages_list.split(',') }}"
+  tasks:
+    - name: Update apt package cache
+      apt:
+        update_cache: yes
+    - name: Install required packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ packages_to_install }}"

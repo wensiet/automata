@@ -1,0 +1,40 @@
+stages:
+  - build
+
+variables:
+  IMAGE_NAME: "registry.gitlab.com/..." # Replace with your gitlab registry image name
+
+
+build-job-dev:
+  only:
+    - develop
+  image: docker:dind
+  stage: build
+  services:
+    - docker:dind
+  script:
+    - echo "Starting build for dev..."
+    - docker info
+    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+    - export VERSION_TAG=$(if [ "$CI_COMMIT_TAG" != "" ]; then echo "$CI_COMMIT_TAG"; else echo "$CI_COMMIT_REF_NAME-${CI_COMMIT_SHORT_SHA}"; fi)
+    - export DEV_TAG="dev"
+    - docker build -t $IMAGE_NAME:$VERSION_TAG -t $IMAGE_NAME:$DEV_TAG .
+    - docker push $IMAGE_NAME:$VERSION_TAG
+    - docker push $IMAGE_NAME:$DEV_TAG
+    - if [ "$CI_COMMIT_TAG" != "" ]; then docker tag $IMAGE_NAME:$VERSION_TAG $IMAGE_NAME:latest; docker push $IMAGE_NAME:latest; fi
+
+build-job-prod:
+  only:
+    - production
+  image: docker:dind
+  stage: build
+  services:
+    - docker:dind
+  script:
+    - echo "Starting build for prod..."
+    - docker info
+    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+    - export PROD_TAG="production"
+    - docker build -t $IMAGE_NAME:$PROD_TAG .
+    - docker push $IMAGE_NAME:$PROD_TAG
+    - if [ "$CI_COMMIT_TAG" != "" ]; then docker tag $IMAGE_NAME:$PROD_TAG $IMAGE_NAME:latest; docker push $IMAGE_NAME:latest; fi

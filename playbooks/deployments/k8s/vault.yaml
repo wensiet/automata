@@ -1,0 +1,32 @@
+---
+- name: Install Vault
+  hosts: servers
+  remote_user: root
+  pre_tasks:
+    - name: Ensure that cluster is running
+      command: "kubectl cluster-info"
+      ignore_errors: yes
+      register: cluster_info
+      changed_when: false
+    - name: Ensure that helm is installed
+      command: "helm version"
+      ignore_errors: yes
+      register: helm_version
+      changed_when: false
+  tasks:
+    - name: Add hashicorp repository
+      command: "helm repo add hashicorp https://helm.releases.hashicorp.com"
+      when: helm_version.rc == 0
+      changed_when: false
+    - name: Update helm repositories
+      command: "helm repo update"
+      when: helm_version.rc == 0
+      changed_when: false
+    - name: Install vault
+      command: "helm install vault hashicorp/vault"
+      when: helm_version.rc == 0
+      changed_when: false
+    - name: Ensure vault is installed
+      command: "kubectl get pods -n default"
+      when: helm_version.rc == 0
+      changed_when: false
