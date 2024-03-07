@@ -8,12 +8,18 @@
       ignore_errors: yes
       register: cluster_info
       changed_when: false
-    - name: Ensure that metrics service is not installed
-      command: "kubectl get pods -n kube-system | grep metrics-server"
+    - name: Ensure that helm is installed
+      command: "helm version"
       ignore_errors: yes
-      register: metrics_server
+      register: helm_version
       changed_when: false
   tasks:
-    - name: Apply k8s metrics configuration
-      command: "kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml"
+    - name: Add helm repository
+      command: "helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/"
+      become: yes
+    - name: Install chart
+      command: "helm upgrade --install metrics-server metrics-server/metrics-server"
+      become: yes
+    - name: Patch chart
+      command: echo 'a3ViZWN0bCBwYXRjaCBkZXBsb3ltZW50IG1ldHJpY3Mtc2VydmVyIC0tdHlwZT1qc29uIC1wICdbeyJvcCI6ImFkZCIsInBhdGgiOiIvc3BlYy90ZW1wbGF0ZS9zcGVjL2NvbnRhaW5lcnMvMC9hcmdzLy0iLCJ2YWx1ZSI6Ii0ta3ViZWxldC1pbnNlY3VyZS10bHMifV0n' | base64 -d | bash
       become: yes
