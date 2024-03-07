@@ -21,6 +21,12 @@
       register: kubeconfig_output
       become: yes
     - name: Save kubeconfig to local file
-      ansible.builtin.fetch:
-        src: "{{ kubeconfig_output.stdout }}"
+      ansible.builtin.copy:
+        content: "{{ kubeconfig_output.stdout }}"
         dest: "conf_{{ ansible_host }}.yaml"
+    - name: Fetch the file to local machine
+      ansible.builtin.fetch:
+        src: "conf_{{ ansible_host }}.yaml"
+        dest: "conf_{{ ansible_host }}.yaml"
+        flat: yes
+        validate_checksum: no
