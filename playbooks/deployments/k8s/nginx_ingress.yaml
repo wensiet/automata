@@ -1,6 +1,6 @@
 ---
 - name: Install nginx-ingress
-  hosts: servers
+  hosts: all
   remote_user: root
   pre_tasks:
     - name: Ensure that cluster is running

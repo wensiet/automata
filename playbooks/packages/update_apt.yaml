@@ -1,6 +1,6 @@
 ---
 - name: Update and Upgrade Apt Packages
-  hosts: servers
+  hosts: all
   become: yes
   tasks:
     - name: Update apt package cache

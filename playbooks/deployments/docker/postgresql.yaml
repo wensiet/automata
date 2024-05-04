@@ -1,6 +1,6 @@
 ---
 - name: Install and run PostgreSQL using Docker
-  hosts: servers
+  hosts: all
   remote_user: root
   vars:
     postgres_user: "user"

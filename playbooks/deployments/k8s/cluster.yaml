@@ -1,6 +1,6 @@
 ---
 - name: Deploy single-node kind cluster
-  hosts: servers
+  hosts: all
   remote_user: root
   tasks:
     - name: Create config.yaml file

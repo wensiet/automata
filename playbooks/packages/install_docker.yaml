@@ -1,6 +1,6 @@
 ---
 - name: Install Docker
-  hosts: servers
+  hosts: all
   remote_user: root
   tasks:
     - name: Update apt packages
