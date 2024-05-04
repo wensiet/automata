@@ -1,6 +1,6 @@
 ---
 - name: Install and run Redis using Docker
-  hosts: servers
+  hosts: all
   remote_user: root
   vars:
     redis_password: "pass"

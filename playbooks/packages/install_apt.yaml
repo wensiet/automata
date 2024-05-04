@@ -1,6 +1,6 @@
 ---
 - name: Install Apt Packages
-  hosts: servers
+  hosts: all
   become: yes
   vars:
     packages_to_install: "{{ packages_list.split(',') }}"

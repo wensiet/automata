@@ -1,6 +1,6 @@
 ---
 - name: Install and run Loki stack using Docker (This includes Loki, Promtail and Grafana)
-  hosts: servers
+  hosts: all
   remote_user: root
   pre_tasks:
     - name: Check if Docker service is enabled

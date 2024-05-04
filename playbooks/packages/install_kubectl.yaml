@@ -1,6 +1,6 @@
 ---
 - name: Install kubectl
-  hosts: servers
+  hosts: all
   remote_user: root
   tasks:
     - name: Get Kubernetes stable version

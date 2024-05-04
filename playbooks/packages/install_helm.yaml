@@ -1,6 +1,6 @@
 ---
 - name: Install Helm
-  hosts: servers
+  hosts: all
   remote_user: root
   tasks:
     - name: Curl release
