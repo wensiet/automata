@@ -33,6 +33,10 @@ developed for VPS and cloud.
 | [ArgoCD](playbooks/deployments/k8s/argocd.yaml)               | Kubernetes | Deploys ArgoCD for your cluster                      |
 | [Vault](playbooks/deployments/k8s/vault.yaml)                 | Kubernetes | Deploys Hashicorp Vault for your cluster             |
 
+| Playbook                                                                      | Category  | Description                                                            |
+|-------------------------------------------------------------------------------|-----------|------------------------------------------------------------------------|
+| [PostgreSQL cluster](playbooks/deployments/baremetal/postgresql_cluster.yaml) | Baremetal | Deploys a PostgreSQL database in cluster mode with one standby replica |
+
 ### Packages:
 
 | Playbook                                                   | Description                           |
@@ -69,10 +73,11 @@ Example:
 
 ## Dockerfiles:
 
-| Dockerfile                         | Description          |
-|------------------------------------|----------------------|
-| [Python](docker/Python.Dockerfile) | Python image builder |
-| [Golang](docker/Golang.Dockerfile) | Golang image builder |
+| Dockerfile                                | Description                       |
+|-------------------------------------------|-----------------------------------|
+| [Python](docker/Python-pip.Dockerfile)    | Python image builder using PIP    |
+| [Python](docker/Python-poetry.Dockerfile) | Python image builder using Poetry |
+| [Golang](docker/Golang.Dockerfile)        | Golang image builder              |
 
 ## CI / CD pipelines: (IN PROGRESS)
 
