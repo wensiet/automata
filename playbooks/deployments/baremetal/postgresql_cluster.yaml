@@ -1,0 +1,154 @@
+# Required hosts
+#     - primary - main database, to handle requests
+#     - standby - standby database, to replicate data using WAL
+---
+- name: Deploy PostgreSQL cluster
+  hosts: all
+  become: yes
+  vars:
+    db_name: "mydb"
+    db_user: "user"
+    db_password: "password"
+    db_replication_user: "replication_user"
+    db_replication_password: "password"
+    postgres_version_major: 14
+  tasks:
+    - name: Install dependencies
+      block:
+        - name: Update packages
+          apt:
+            update_cache: yes
+        - name: Install pip
+          apt:
+            name: python3-pip
+            state: present
+        - name: Install psycopg2
+          pip:
+            name: psycopg2-binary
+            state: present
+
+    - name: Install postgresql
+      apt:
+        name: postgresql-{{ postgres_version_major }}
+        state: present
+
+    - name: Verify that PostgreSQL is installed
+      command: psql --version
+      become: yes
+      become_user: postgres
+
+    - name: Get servers IP's
+      set_fact:
+        standby_ip: "{{ hostvars['standby']['ansible_host'] }}"
+        primary_ip: "{{ hostvars['primary']['ansible_host'] }}"
+
+
+    - name: Configure primary database
+      block:
+        - name: Create database
+          postgresql_db:
+            name: "{{ db_name }}"
+            state: present
+          become_user: postgres
+
+        - name: Create user for database
+          postgresql_user:
+            name: "{{ db_user }}"
+            password: "{{ db_password }}"
+            encrypted: yes
+            state: present
+          become_user: postgres
+
+        - name: Grant privileges to user
+          postgresql_privs:
+            db: postgres
+            privs: ALL
+            type: database
+            obj: "{{ db_name }}"
+            role: "{{ db_user }}"
+          become_user: postgres
+      when: inventory_hostname == "primary"
+
+    - name: Configure replication on primary database
+      block:
+        - name: Create user for replication
+          postgresql_user:
+            name: "{{ db_replication_user }}"
+            password: "{{ db_replication_password }}"
+            role_attr_flags: replication
+            encrypted: yes
+            state: present
+          become_user: postgres
+
+        - name: Ensure replication settings are in place
+          lineinfile:
+            dest: /etc/postgresql/{{ postgres_version_major }}/main/postgresql.conf
+            line: "{{ item }}"
+            state: present
+          with_items:
+            - "wal_level = logical"
+            - "listen_addresses = '*'"
+            - "wal_log_hints = on"
+
+        - name: Allow replication connections in pg_hba.conf
+          lineinfile:
+            dest: /etc/postgresql/{{ postgres_version_major }}/main/pg_hba.conf
+            line: "host replication {{ db_replication_user }} {{ standby_ip }}/32 md5"
+            state: present
+
+        - name: Allow connections to created database (primary)
+          lineinfile:
+            dest: /etc/postgresql/{{ postgres_version_major }}/main/pg_hba.conf
+            line: "host {{ db_name }} {{ db_user }} 0.0.0.0/0 md5"
+            state: present
+
+        - name: Restart PostgreSQL service
+          service:
+            name: postgresql
+            state: restarted
+      when: inventory_hostname == "primary"
+
+    - name: Set up replication on standby server
+      block:
+        - name: Stop PostgreSQL service temporarily
+          service:
+            name: postgresql
+            state: stopped
+          become: yes
+
+        - name: Remove existing data directory
+          file:
+            path: /var/lib/postgresql/{{ postgres_version_major }}/main
+            state: absent
+          become: yes
+
+        - name: Enable WAL streaming
+          expect:
+            command: >
+              pg_basebackup -h {{ primary_ip }}
+              -U {{ db_replication_user }}
+              -X stream
+              -C -S replica_stb
+              -v -R -W
+              -D "/var/lib/postgresql/{{ postgres_version_major }}/main/"
+            responses:
+              "Password:": "{{ db_replication_password }}"
+          become: yes
+
+        - name: Grant permissions to PostgreSQL data directory
+          command: "chown postgres -R /var/lib/postgresql/{{ postgres_version_major }}/main/"
+          become: yes
+
+        - name: Allow connections to created database (stb)
+          lineinfile:
+            dest: /etc/postgresql/{{ postgres_version_major }}/main/pg_hba.conf
+            line: "host {{ db_name }} {{ db_user }} 0.0.0.0/0 md5"
+            state: present
+          become: yes
+
+        - name: Start PostgreSQL service
+          service:
+            name: postgresql
+          become: yes
+
+      when: inventory_hostname == "standby"
