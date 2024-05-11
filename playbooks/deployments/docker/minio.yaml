@@ -3,8 +3,8 @@
   hosts: all
   remote_user: root
   vars:
-    minio_access_key: "user"
-    minio_secret: "pass"
+    minio_access_key: "username"
+    minio_secret: "password"
   pre_tasks:
     - name: Check if Docker service is enabled
       service:
@@ -17,6 +17,9 @@
       docker_container:
         name: minio
         image: minio/minio:latest
+        command: minio server /data --console-address ":9001"
+        volumes:
+          - minio-pvc:/data
         env:
           MINIO_ACCESS_KEY: "{{ minio_access_key }}"
           MINIO_SECRET_KEY: "{{ minio_secret }}"
